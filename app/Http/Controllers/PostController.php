@@ -41,11 +41,11 @@ class PostController extends Controller
      */
     public function create()
     {
-        // Get all available platforms
-        $platforms = Platform::all();
+        // Get only the activated platforms for the current user
+        $activePlatforms = auth()->user()->activePlatforms;
 
         return Inertia::render('Posts/Create', [
-            'platforms' => $platforms,
+            'platforms' => $activePlatforms,
         ]);
     }
 
