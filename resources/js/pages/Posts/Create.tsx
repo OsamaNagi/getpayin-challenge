@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 
 interface Platform {
     id: number;
@@ -34,7 +35,7 @@ export default function Create({ auth, platforms }: Props) {
         title: '',
         content: '',
         image_url: '',
-        scheduled_time: format(new Date(Date.now() + 3600000), "yyyy-MM-dd'T'HH:mm"), // Default to 1 hour from now
+        scheduled_time: new Date(Date.now() + 3600000), // Default to 1 hour from now
         platforms: [] as number[],
     });
 
@@ -51,6 +52,10 @@ export default function Create({ auth, platforms }: Props) {
             ? data.platforms.filter(id => id !== platformId)
             : [...data.platforms, platformId]
         );
+    };
+
+    const handleDateChange = (date: Date) => {
+        setData('scheduled_time', date);
     };
 
     const submit = (e: React.FormEvent) => {
@@ -133,14 +138,9 @@ export default function Create({ auth, platforms }: Props) {
 
                                     <div>
                                         <Label htmlFor="scheduled_time">Scheduled Time</Label>
-                                        <Input
-                                            id="scheduled_time"
-                                            type="datetime-local"
-                                            name="scheduled_time"
-                                            value={data.scheduled_time}
-                                            className="mt-1 block w-full"
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('scheduled_time', e.target.value)}
-                                            required
+                                        <DateTimePicker
+                                            date={data.scheduled_time}
+                                            setDate={handleDateChange}
                                         />
                                         <InputError message={errors.scheduled_time} className="mt-2" />
                                     </div>
