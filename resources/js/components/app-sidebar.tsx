@@ -15,12 +15,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Posts',
-        href: '/posts',
+        href: route('posts.index'),
         icon: FileText,
     },
     {
         title: 'Platforms',
-        href: '/platforms',
+        href: route('platforms.index'),
         icon: Share2,
     },
 ];
