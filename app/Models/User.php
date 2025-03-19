@@ -59,6 +59,6 @@ class User extends Authenticatable
      */
     public function activePlatforms()
     {
-        return $this->belongsToMany(Platform::class, 'user_platform');
+        return $this->belongsToMany(Platform::class, 'user_platform')->withTimestamps();
     }
 }

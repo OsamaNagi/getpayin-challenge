@@ -1,4 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -21,21 +22,57 @@ interface Props {
         };
     };
     platforms: Platform[];
+    errors?: {
+        message?: string;
+    };
 }
 
-export default function Index({ auth, platforms }: Props) {
-    const { post, processing } = useForm();
+export default function Index({ auth, platforms: initialPlatforms, errors }: Props) {
+    // Use local state for platforms to ensure UI updates instantly
+    const [platforms, setPlatforms] = useState(initialPlatforms);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const togglePlatform = (platform: Platform) => {
-        post(route('platforms.toggle-active', platform.id), {
-            preserveScroll: true,
-            data: { active: !platform.active } as any,
-            onSuccess: () => {
-                toast.success('Platform Updated', {
-                    description: `${platform.name} has been ${!platform.active ? 'activated' : 'deactivated'}.`,
-                });
-            },
+    // Show error toast if there are errors from the server
+    if (errors?.message) {
+        toast.error('Error', {
+            description: errors.message,
         });
+    }
+
+    const togglePlatform = async (platform: Platform, index: number) => {
+        // Optimistically update the UI immediately
+        const newActive = !platform.active;
+        const updatedPlatforms = [...platforms];
+        updatedPlatforms[index] = { ...platform, active: newActive };
+        setPlatforms(updatedPlatforms);
+        
+        setIsSubmitting(true);
+        
+        // Use Inertia router for the request
+        router.post(route('platforms.toggle-active', platform.id), 
+            { active: newActive },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Platform Updated', {
+                        description: `${platform.name} has been ${newActive ? 'activated' : 'deactivated'}.`,
+                    });
+                },
+                onError: () => {
+                    // Revert UI change on error
+                    const revertedPlatforms = [...platforms];
+                    revertedPlatforms[index] = { ...platform };
+                    setPlatforms(revertedPlatforms);
+                    
+                    toast.error('Failed to update platform', {
+                        description: 'There was an error updating the platform. Please try again.',
+                    });
+                },
+                onFinish: () => {
+                    setIsSubmitting(false);
+                }
+            }
+        );
     };
 
     return (
@@ -65,7 +102,7 @@ export default function Index({ auth, platforms }: Props) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {platforms.map((platform) => (
+                                    {platforms.map((platform, index) => (
                                         <TableRow key={platform.id}>
                                             <TableCell className="font-medium">{platform.name}</TableCell>
                                             <TableCell>{platform.type}</TableCell>
@@ -84,8 +121,8 @@ export default function Index({ auth, platforms }: Props) {
                                                 <div className="flex items-center space-x-2">
                                                     <Switch
                                                         checked={platform.active}
-                                                        onCheckedChange={() => togglePlatform(platform)}
-                                                        disabled={processing}
+                                                        onCheckedChange={() => togglePlatform(platform, index)}
+                                                        disabled={isSubmitting}
                                                     />
                                                     <span className="text-sm">
                                                         {platform.active ? 'Activated' : 'Activate'}

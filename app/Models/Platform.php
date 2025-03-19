@@ -29,4 +29,9 @@ class Platform extends Model
             ->withPivot('platform_status')
             ->withTimestamps();
     }
+
+    public function activeUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_platform')->withTimestamps();
+    }
 }

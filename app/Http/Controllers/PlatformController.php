@@ -43,19 +43,41 @@ class PlatformController extends Controller
      */
     public function toggleActive(Request $request, Platform $platform)
     {
-        $active = $request->input('active', false);
+        \Log::info('Toggle active called', [
+            'platform_id' => $platform->id,
+            'active' => $request->input('active'),
+            'user_id' => auth()->id(),
+            'request' => $request->all()
+        ]);
+        
+        $active = $request->boolean('active');
         $user = auth()->user();
 
-        if ($active) {
-            // Activate platform for user
-            if (!$user->activePlatforms()->where('platform_id', $platform->id)->exists()) {
-                $user->activePlatforms()->attach($platform->id);
+        try {
+            if ($active) {
+                // Activate platform for user
+                if (!$user->activePlatforms()->where('platform_id', $platform->id)->exists()) {
+                    \Log::info('Attaching platform', ['platform_id' => $platform->id, 'user_id' => $user->id]);
+                    $user->activePlatforms()->attach($platform->id);
+                }
+            } else {
+                // Deactivate platform for user
+                \Log::info('Detaching platform', ['platform_id' => $platform->id, 'user_id' => $user->id]);
+                $user->activePlatforms()->detach($platform->id);
             }
-        } else {
-            // Deactivate platform for user
-            $user->activePlatforms()->detach($platform->id);
-        }
 
-        return back()->with('success', 'Platform settings updated.');
+            // When using Inertia, we need to return an Inertia redirect or response
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('Error toggling platform', [
+                'error' => $e->getMessage(),
+                'platform_id' => $platform->id,
+                'user_id' => $user->id,
+                'active' => $active
+            ]);
+            
+            // With Inertia, we should return a redirect with errors
+            return redirect()->back()->withErrors(['message' => 'Failed to update platform status']);
+        }
     }
 }
