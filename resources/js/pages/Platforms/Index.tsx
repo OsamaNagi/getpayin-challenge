@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 interface Platform {
     id: number;
     name: string;
-    type: string;
     active: boolean;
 }
 
@@ -96,7 +95,7 @@ export default function Index({ auth, platforms: initialPlatforms, errors }: Pro
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Platform</TableHead>
-                                        <TableHead>Type</TableHead>
+                                        {/* <TableHead>Type</TableHead> */}
                                         <TableHead>Status</TableHead>
                                         <TableHead>Action</TableHead>
                                     </TableRow>
@@ -105,7 +104,7 @@ export default function Index({ auth, platforms: initialPlatforms, errors }: Pro
                                     {platforms.map((platform, index) => (
                                         <TableRow key={platform.id}>
                                             <TableCell className="font-medium">{platform.name}</TableCell>
-                                            <TableCell>{platform.type}</TableCell>
+                                            {/* <TableCell>{platform.type}</TableCell> */}
                                             <TableCell>
                                                 <span 
                                                     className={`text-sm px-2 py-1 rounded ${
