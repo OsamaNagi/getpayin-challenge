@@ -45,4 +45,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the posts for the user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get the active platforms for the user.
+     */
+    public function activePlatforms()
+    {
+        return $this->belongsToMany(Platform::class, 'user_platform');
+    }
 }
