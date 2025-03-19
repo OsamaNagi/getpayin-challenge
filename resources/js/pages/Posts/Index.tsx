@@ -153,44 +153,47 @@ export default function Index({ auth, posts }: Props) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex space-x-2">
-                                                        <Button 
-                                                            variant="outline" 
-                                                            size="sm" 
-                                                            asChild
-                                                            disabled={post.status === 'published'}
-                                                        >
-                                                            <Link href={route('posts.edit', post.id)}>
-                                                                Edit
-                                                            </Link>
-                                                        </Button>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
+                                                        {post.status !== 'published' && (
+                                                            <>
                                                                 <Button 
-                                                                    variant="destructive"
-                                                                    size="sm"
+                                                                    variant="outline" 
+                                                                    size="sm" 
+                                                                    asChild
                                                                 >
-                                                                    Delete
+                                                                    <Link href={route('posts.edit', post.id)}>
+                                                                        Edit
+                                                                    </Link>
                                                                 </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This action cannot be undone. This will permanently delete your post
-                                                                        and remove it from our servers.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        onClick={() => handleDelete(post.id)}
-                                                                        className="bg-red-600 hover:bg-red-700"
-                                                                    >
-                                                                        Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger asChild>
+                                                                        <Button 
+                                                                            variant="destructive"
+                                                                            size="sm"
+                                                                        >
+                                                                            Delete
+                                                                        </Button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                This action cannot be undone. This will permanently delete your post
+                                                                                and remove it from our servers.
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                            <AlertDialogAction
+                                                                                onClick={() => handleDelete(post.id)}
+                                                                                className="bg-red-600 hover:bg-red-700"
+                                                                            >
+                                                                                Delete
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
