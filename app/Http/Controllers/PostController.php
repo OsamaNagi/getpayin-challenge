@@ -96,11 +96,11 @@ class PostController extends Controller
         }
 
         $post->load('platforms');
-        $platforms = Platform::all();
+        $activePlatforms = auth()->user()->activePlatforms;
 
         return Inertia::render('Posts/Edit', [
             'post' => $post,
-            'platforms' => $platforms,
+            'platforms' => $activePlatforms,
         ]);
     }
 
