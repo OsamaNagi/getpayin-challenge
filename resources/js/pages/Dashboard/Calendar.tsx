@@ -78,16 +78,6 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
             </CardHeader>
             <CardContent>
                 <div className="">
-                    <style>
-                        {`
-                            .fc-theme-standard td, .fc-theme-standard th {
-                                border-color: rgb(31 41 55); /* gray-800 */
-                            }
-                            .fc-theme-standard .fc-scrollgrid {
-                                border-color: rgb(31 41 55); /* gray-800 */
-                            }
-                        `}
-                    </style>
                     <div className="h-[600px]">
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}

@@ -157,3 +157,27 @@
         @apply bg-background text-foreground;
     }
 }
+
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: rgb(31 41 55); 
+}
+.fc-theme-standard .fc-scrollgrid {
+    border-color: rgb(31 41 55); 
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+.fc .fc-col-header-cell {
+    background-color: rgb(31 41 55); 
+    color: rgb(209 213 219);
+}
+.fc .fc-timegrid-axis {
+    background-color: rgb(31 41 55);
+    color: rgb(209 213 219);
+}
+.fc .fc-timegrid-slot {
+    color: rgb(209 213 219);
+}
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+    color: rgb(209 213 219);
+}
