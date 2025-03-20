@@ -1,9 +1,10 @@
 import React from 'react';
+import { Link, router } from '@inertiajs/react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
-import { EventContentArg } from '@fullcalendar/core';
+import { EventContentArg, EventClickArg } from '@fullcalendar/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 
@@ -40,11 +41,17 @@ const getEventColor = (status: Post['status']) => {
 };
 
 const Calendar: React.FC<CalendarProps> = ({ posts }) => {
+    const handleEventClick = (clickInfo: EventClickArg) => {
+        const postId = clickInfo.event.id;
+        router.visit(route('posts.show', postId));
+    };
+
     const events = posts.map(post => ({
         id: post.id.toString(),
         title: post.title,
         start: post.scheduled_time,
         backgroundColor: getEventColor(post.status),
+        className: 'cursor-pointer hover:opacity-90 transition-opacity',
         extendedProps: {
             content: post.content,
             status: post.status,
@@ -89,6 +96,7 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
                             }}
                             events={events}
                             eventContent={renderEventContent}
+                            eventClick={handleEventClick}
                             height="auto"
                             eventTimeFormat={{
                                 hour: '2-digit',
