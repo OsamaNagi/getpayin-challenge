@@ -195,3 +195,16 @@
         margin-left: 0 !important;
     }
 } */
+
+/* .fc-daygrid-day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.fc-daygrid-event-harness {
+    margin: 0 !important;
+}
+.fc-daygrid-event {
+    margin: 0 !important;
+    border-radius: 0.25rem !important;
+} */

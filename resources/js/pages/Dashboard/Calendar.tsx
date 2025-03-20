@@ -59,15 +59,13 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
                 <div className="font-semibold truncate text-xs sm:text-sm">
                     {eventInfo.event.title}
                 </div>
-                <div className="flex flex-wrap gap-0.5 overflow-hidden">
-                    {platforms.map(platform => (
-                        <span
-                            key={platform.id}
-                            className="px-1 py-0.5 text-[10px] sm:text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap"
-                        >
-                            {platform.name}
-                        </span>
-                    ))}
+                <div className="flex items-center gap-0.5">
+                    <span className="px-1.5 py-0.5 text-[10px] sm:text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                        {platforms[0].name}
+                        {platforms.length > 1 && (
+                            <span className="ml-0.5 font-medium">+{platforms.length - 1}</span>
+                        )}
+                    </span>
                 </div>
             </div>
         );
