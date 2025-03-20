@@ -72,7 +72,7 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
             </CardHeader>
             <CardContent className="p-4 lg:p-8">
                 <div className="overflow-x-auto">
-                    <div className="min-h-[700px] w-full">
+                    <div className="min-h-[700px] w-full [&_.fc-popover-body]:max-h-80 [&_.fc-popover-body]:overflow-y-auto [&_.fc-popover]:!max-w-sm">
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
                             initialView="dayGridMonth"
