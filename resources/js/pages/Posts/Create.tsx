@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ImageIcon, X } from 'lucide-react';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { PeakHoursSuggestion } from '@/components/peak-hours-suggestion';
 
 interface Platform {
     id: number;
@@ -200,6 +201,14 @@ export default function Create({ auth, platforms }: Props) {
                                         <DateTimePicker
                                             date={data.scheduled_time}
                                             setDate={handleDateChange}
+                                        />
+                                        <PeakHoursSuggestion
+                                            selectedPlatforms={platforms
+                                                .filter(p => data.platforms.includes(p.id))
+                                                .map(p => p.name)
+                                            }
+                                            onTimeSelect={handleDateChange}
+                                            currentDate={data.scheduled_time}
                                         />
                                         <InputError message={errors.scheduled_time} className="mt-2" />
                                     </div>
