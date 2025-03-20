@@ -55,13 +55,15 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
     const renderEventContent = (eventInfo: EventContentArg) => {
         const platforms = eventInfo.event.extendedProps.platforms as Platform[];
         return (
-            <div className="flex flex-col gap-1 p-1">
-                <div className="font-semibold">{eventInfo.event.title}</div>
-                <div className="text-xs flex gap-1">
+            <div className="flex flex-col gap-0.5 p-1 min-w-0 max-w-full">
+                <div className="font-semibold truncate text-xs sm:text-sm">
+                    {eventInfo.event.title}
+                </div>
+                <div className="flex flex-wrap gap-0.5 overflow-hidden">
                     {platforms.map(platform => (
                         <span
                             key={platform.id}
-                            className="px-1.5 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                            className="px-1 py-0.5 text-[10px] sm:text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap"
                         >
                             {platform.name}
                         </span>
@@ -77,8 +79,8 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
                 <CardTitle>Scheduled Posts Calendar</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="">
-                    <div className="h-[600px]">
+                <div>
+                    <div className="min-h-[600px]">
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
                             initialView="dayGridMonth"

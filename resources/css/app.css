@@ -181,3 +181,17 @@
 .fc .fc-timegrid-slot-label-cushion {
     color: rgb(209 213 219);
 }
+
+/* @media (max-width: 640px) {
+    .fc .fc-daygrid-event {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-radius: 0.25rem;
+    }
+    .fc-direction-ltr .fc-daygrid-event.fc-event-end {
+        margin-right: 0 !important;
+    }
+    .fc-direction-ltr .fc-daygrid-event.fc-event-start {
+        margin-left: 0 !important;
+    }
+} */
