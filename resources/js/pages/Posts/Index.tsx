@@ -17,6 +17,15 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getStatusBadgeColor, getPlatformStatusColor } from '@/utils/colors';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Platform {
     id: number;
@@ -48,23 +57,24 @@ interface Props {
     };
     posts: {
         data: Post[];
-        links: any[];
-        meta: {
-            current_page: number;
-            from: number;
-            last_page: number;
-            links: any[];
-            path: string;
-            per_page: number;
-            to: number;
-            total: number;
-        };
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
     };
 }
 
 export default function Index({ auth, posts }: Props) {
     const handleDelete = (postId: number) => {
         router.delete(route('posts.destroy', postId));
+    };
+
+    const handlePageChange = (url: string) => {
+        router.get(url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -92,106 +102,170 @@ export default function Index({ auth, posts }: Props) {
                         </CardHeader>
                         <CardContent>
                             {posts.data.length > 0 ? (
-                                <div className="relative overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="whitespace-nowrap">Title</TableHead>
-                                                <TableHead className="whitespace-nowrap">Content</TableHead>
-                                                <TableHead className="whitespace-nowrap">Status</TableHead>
-                                                <TableHead className="whitespace-nowrap">Scheduled Time</TableHead>
-                                                <TableHead className="whitespace-nowrap">Platforms</TableHead>
-                                                <TableHead className="whitespace-nowrap">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {posts.data.map((post) => (
-                                                <TableRow key={post.id}>
-                                                    <TableCell className="font-medium min-w-[120px]">{post.title}</TableCell>
-                                                    <TableCell className="min-w-[200px] max-w-md">
-                                                        <p className="truncate" title={post.content}>
-                                                            {post.content}
-                                                        </p>
-                                                    </TableCell>
-                                                    <TableCell className="whitespace-nowrap">
-                                                        <Badge className={getStatusBadgeColor(post.status)}>
-                                                            {post.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="whitespace-nowrap min-w-[180px]">
-                                                        {format(new Date(post.scheduled_time), 'PPP p')}
-                                                    </TableCell>
-                                                    <TableCell className="min-w-[200px]">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {post.platforms.map((platform) => (
-                                                                <Badge 
-                                                                    key={platform.id}
-                                                                    className={getPlatformStatusColor(platform.pivot.platform_status)}
-                                                                >
-                                                                    {platform.name} ({platform.pivot.platform_status})
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="whitespace-nowrap">
-                                                        <div className="flex flex-col sm:flex-row gap-2">
-                                                            <Button 
-                                                                variant="secondary" 
-                                                                size="sm" 
-                                                                asChild
-                                                            >
-                                                                <Link href={route('posts.show', post.id)}>
-                                                                    View
-                                                                </Link>
-                                                            </Button>
-                                                            {post.status !== 'published' && (
-                                                                <>
-                                                                    <Button 
-                                                                        variant="outline" 
-                                                                        size="sm" 
-                                                                        asChild
+                                <>
+                                    <div className="relative overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="whitespace-nowrap">Title</TableHead>
+                                                    <TableHead className="whitespace-nowrap">Content</TableHead>
+                                                    <TableHead className="whitespace-nowrap">Status</TableHead>
+                                                    <TableHead className="whitespace-nowrap">Scheduled Time</TableHead>
+                                                    <TableHead className="whitespace-nowrap">Platforms</TableHead>
+                                                    <TableHead className="whitespace-nowrap">Actions</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {posts.data.map((post) => (
+                                                    <TableRow key={post.id}>
+                                                        <TableCell className="font-medium min-w-[120px]">{post.title}</TableCell>
+                                                        <TableCell className="min-w-[200px] max-w-md">
+                                                            <p className="truncate" title={post.content}>
+                                                                {post.content}
+                                                            </p>
+                                                        </TableCell>
+                                                        <TableCell className="whitespace-nowrap">
+                                                            <Badge className={getStatusBadgeColor(post.status)}>
+                                                                {post.status}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="whitespace-nowrap min-w-[180px]">
+                                                            {format(new Date(post.scheduled_time), 'PPP p')}
+                                                        </TableCell>
+                                                        <TableCell className="min-w-[200px]">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {post.platforms.map((platform) => (
+                                                                    <Badge 
+                                                                        key={platform.id}
+                                                                        className={getPlatformStatusColor(platform.pivot.platform_status)}
                                                                     >
-                                                                        <Link href={route('posts.edit', post.id)}>
-                                                                            Edit
-                                                                        </Link>
-                                                                    </Button>
-                                                                    <AlertDialog>
-                                                                        <AlertDialogTrigger asChild>
-                                                                            <Button 
-                                                                                variant="destructive"
-                                                                                size="sm"
-                                                                            >
-                                                                                Delete
-                                                                            </Button>
-                                                                        </AlertDialogTrigger>
-                                                                        <AlertDialogContent>
-                                                                            <AlertDialogHeader>
-                                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                                <AlertDialogDescription>
-                                                                                    This action cannot be undone. This will permanently delete your post
-                                                                                    and remove it from our servers.
-                                                                                </AlertDialogDescription>
-                                                                            </AlertDialogHeader>
-                                                                            <AlertDialogFooter className="sm:space-x-2">
-                                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                                <AlertDialogAction
-                                                                                    onClick={() => handleDelete(post.id)}
-                                                                                    className="bg-red-600 hover:bg-red-700"
+                                                                        {platform.name} ({platform.pivot.platform_status})
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="whitespace-nowrap">
+                                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                                <Button 
+                                                                    variant="secondary" 
+                                                                    size="sm" 
+                                                                    asChild
+                                                                >
+                                                                    <Link href={route('posts.show', post.id)}>
+                                                                        View
+                                                                    </Link>
+                                                                </Button>
+                                                                {post.status !== 'published' && (
+                                                                    <>
+                                                                        <Button 
+                                                                            variant="outline" 
+                                                                            size="sm" 
+                                                                            asChild
+                                                                        >
+                                                                            <Link href={route('posts.edit', post.id)}>
+                                                                                Edit
+                                                                            </Link>
+                                                                        </Button>
+                                                                        <AlertDialog>
+                                                                            <AlertDialogTrigger asChild>
+                                                                                <Button 
+                                                                                    variant="destructive"
+                                                                                    size="sm"
                                                                                 >
                                                                                     Delete
-                                                                                </AlertDialogAction>
-                                                                            </AlertDialogFooter>
-                                                                        </AlertDialogContent>
-                                                                    </AlertDialog>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                                                                </Button>
+                                                                            </AlertDialogTrigger>
+                                                                            <AlertDialogContent>
+                                                                                <AlertDialogHeader>
+                                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                                    <AlertDialogDescription>
+                                                                                        This action cannot be undone. This will permanently delete your post
+                                                                                        and remove it from our servers.
+                                                                                    </AlertDialogDescription>
+                                                                                </AlertDialogHeader>
+                                                                                <AlertDialogFooter className="sm:space-x-2">
+                                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                                    <AlertDialogAction
+                                                                                        onClick={() => handleDelete(post.id)}
+                                                                                        className="bg-red-600 hover:bg-red-700"
+                                                                                    >
+                                                                                        Delete
+                                                                                    </AlertDialogAction>
+                                                                                </AlertDialogFooter>
+                                                                            </AlertDialogContent>
+                                                                        </AlertDialog>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                    <div className="mt-4 flex justify-center">
+                                        <Pagination>
+                                            <PaginationContent>
+                                                {posts.links.map((link, index) => {
+                                                    // Skip rendering if it's just "..." text
+                                                    if (link.label.includes('...')) {
+                                                        return (
+                                                            <PaginationItem key={index}>
+                                                                <PaginationEllipsis />
+                                                            </PaginationItem>
+                                                        );
+                                                    }
+
+                                                    // Previous link
+                                                    if (index === 0) {
+                                                        return link.url && (
+                                                            <PaginationItem key={index}>
+                                                                <PaginationPrevious
+                                                                    href="#"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        if (link.url) handlePageChange(link.url);
+                                                                    }}
+                                                                />
+                                                            </PaginationItem>
+                                                        );
+                                                    }
+
+                                                    // Next link
+                                                    if (index === posts.links.length - 1) {
+                                                        return link.url && (
+                                                            <PaginationItem key={index}>
+                                                                <PaginationNext
+                                                                    href="#"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        if (link.url) handlePageChange(link.url);
+                                                                    }}
+                                                                />
+                                                            </PaginationItem>
+                                                        );
+                                                    }
+
+                                                    // Number links
+                                                    return (
+                                                        <PaginationItem key={index}>
+                                                            <PaginationLink
+                                                                href="#"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    if (link.url) handlePageChange(link.url);
+                                                                }}
+                                                                isActive={link.active}
+                                                            >
+                                                                {link.label}
+                                                            </PaginationLink>
+                                                        </PaginationItem>
+                                                    );
+                                                })}
+                                            </PaginationContent>
+                                        </Pagination>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="text-center p-6">
                                     <p className="text-gray-500">No posts found. Create your first post now!</p>
