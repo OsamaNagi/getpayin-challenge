@@ -95,7 +95,7 @@ export default function Index({ auth, posts }: Props) {
                             <Link href={route('posts.create')}>Create New Post</Link>
                         </Button>
                     </div>
-
+                    
                     <Card>
                         <CardHeader>
                             <CardTitle>All Posts</CardTitle>
@@ -103,7 +103,7 @@ export default function Index({ auth, posts }: Props) {
                         <CardContent>
                             {posts.data.length > 0 ? (
                                 <>
-                                    <div className="relative overflow-x-auto">
+                                    <div className="">
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>

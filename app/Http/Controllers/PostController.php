@@ -126,6 +126,7 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'remove_image' => 'boolean',
             'scheduled_time' => 'required|date',
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'exists:platforms,id',
@@ -136,9 +137,17 @@ class PostController extends Controller
             return back()->with('error', 'Cannot edit a published post.');
         }
 
-        // Handle image upload
+        // Handle image upload or removal
         $imagePath = $post->image_url;
-        if ($request->hasFile('image')) {
+        
+        if ($request->boolean('remove_image')) {
+            // Delete the existing image if it exists
+            if ($post->image_url) {
+                $oldPath = str_replace('/storage/', '', $post->image_url);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $imagePath = null;
+        } elseif ($request->hasFile('image')) {
             // Delete old image if exists
             if ($post->image_url) {
                 $oldPath = str_replace('/storage/', '', $post->image_url);
