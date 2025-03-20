@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { getStatusBadgeColor, getPlatformStatusColor } from '@/utils/colors';
 
 interface Platform {
     id: number;
@@ -38,32 +39,6 @@ interface Props {
 }
 
 export default function Show({ auth, post }: Props) {
-    const getStatusColor = (status: string): string => {
-        switch (status) {
-            case 'draft':
-                return 'bg-gray-200 text-gray-800';
-            case 'scheduled':
-                return 'bg-blue-200 text-blue-800';
-            case 'published':
-                return 'bg-green-200 text-green-800';
-            default:
-                return 'bg-gray-200 text-gray-800';
-        }
-    };
-
-    const getPlatformStatusColor = (status: string): string => {
-        switch (status) {
-            case 'pending':
-                return 'bg-yellow-200 text-yellow-800';
-            case 'published':
-                return 'bg-green-200 text-green-800';
-            case 'failed':
-                return 'bg-red-200 text-red-800';
-            default:
-                return 'bg-gray-200 text-gray-800';
-        }
-    };
-
     return (
         <AppLayout>
             <Head title={`Post - ${post.title}`} />
@@ -83,7 +58,7 @@ export default function Show({ auth, post }: Props) {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-xl">{post.title}</CardTitle>
-                                <Badge className={getStatusColor(post.status)}>
+                                <Badge className={getStatusBadgeColor(post.status)}>
                                     {post.status}
                                 </Badge>
                             </div>

@@ -6,7 +6,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import { EventContentArg, EventClickArg } from '@fullcalendar/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format } from 'date-fns';
+import { getStatusColor } from '@/utils/colors';
 
 interface Platform {
     id: number;
@@ -27,19 +27,6 @@ interface CalendarProps {
     posts: Post[];
 }
 
-const getEventColor = (status: Post['status']) => {
-    switch (status) {
-        case 'draft':
-            return '#6b7280'; // gray-500
-        case 'scheduled':
-            return '#3b82f6'; // blue-500
-        case 'published':
-            return '#10b981'; // emerald-500
-        default:
-            return '#6b7280';
-    }
-};
-
 const Calendar: React.FC<CalendarProps> = ({ posts }) => {
     const handleEventClick = (clickInfo: EventClickArg) => {
         const postId = clickInfo.event.id;
@@ -50,7 +37,7 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
         id: post.id.toString(),
         title: post.title,
         start: post.scheduled_time,
-        backgroundColor: getEventColor(post.status),
+        backgroundColor: getStatusColor(post.status),
         className: 'cursor-pointer hover:opacity-90 transition-opacity',
         extendedProps: {
             content: post.content,

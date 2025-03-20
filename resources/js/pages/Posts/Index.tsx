@@ -16,6 +16,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { getStatusBadgeColor, getPlatformStatusColor } from '@/utils/colors';
 
 interface Platform {
     id: number;
@@ -66,32 +67,6 @@ export default function Index({ auth, posts }: Props) {
         router.delete(route('posts.destroy', postId));
     };
 
-    const getStatusColor = (status: string): string => {
-        switch (status) {
-            case 'draft':
-                return 'bg-gray-200 text-gray-800';
-            case 'scheduled':
-                return 'bg-blue-200 text-blue-800';
-            case 'published':
-                return 'bg-green-200 text-green-800';
-            default:
-                return 'bg-gray-200 text-gray-800';
-        }
-    };
-
-    const getPlatformStatusColor = (status: string): string => {
-        switch (status) {
-            case 'pending':
-                return 'bg-yellow-200 text-yellow-800';
-            case 'published':
-                return 'bg-green-200 text-green-800';
-            case 'failed':
-                return 'bg-red-200 text-red-800';
-            default:
-                return 'bg-gray-200 text-gray-800';
-        }
-    };
-
     return (
         <AppLayout
             user={auth.user}
@@ -139,7 +114,7 @@ export default function Index({ auth, posts }: Props) {
                                                         </p>
                                                     </TableCell>
                                                     <TableCell className="whitespace-nowrap">
-                                                        <Badge className={getStatusColor(post.status)}>
+                                                        <Badge className={getStatusBadgeColor(post.status)}>
                                                             {post.status}
                                                         </Badge>
                                                     </TableCell>
