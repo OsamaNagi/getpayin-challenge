@@ -86,12 +86,12 @@ export default function Index({ auth, posts }: Props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div className="flex flex-row items-center justify-between gap-4 mb-6">
                         <div>
                             <h3 className="text-lg font-medium">Your Posts</h3>
                             <p className="text-sm text-gray-500">Manage your scheduled and published posts</p>
                         </div>
-                        <Button asChild className="w-full sm:w-auto">
+                        <Button asChild className="sm:w-auto">
                             <Link href={route('posts.create')}>Create New Post</Link>
                         </Button>
                     </div>

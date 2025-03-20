@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ImageIcon, X } from 'lucide-react';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 
 interface Platform {
@@ -34,17 +34,35 @@ export default function Create({ auth, platforms }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
         content: '',
-        image_url: '',
+        image: null as File | null,
         scheduled_time: new Date(Date.now() + 3600000), // Default to 1 hour from now
         platforms: [] as number[],
     });
 
     const [charCount, setCharCount] = useState(0);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const content = e.target.value;
         setData('content', content);
         setCharCount(content.length);
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+        setData('image', file);
+        
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+        } else {
+            setPreviewUrl(null);
+        }
+    };
+
+    const removeImage = () => {
+        setData('image', null);
+        setPreviewUrl(null);
     };
 
     const handlePlatformToggle = (platformId: number) => {
@@ -61,7 +79,11 @@ export default function Create({ auth, platforms }: Props) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('posts.store'), {
-            onSuccess: () => reset(),
+            forceFormData: true,
+            onSuccess: () => {
+                reset();
+                setPreviewUrl(null);
+            },
         });
     };
 
@@ -73,7 +95,7 @@ export default function Create({ auth, platforms }: Props) {
             <Head title="Create Post" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {platforms.length === 0 ? (
                         <Alert variant="destructive" className="mb-6">
                             <AlertCircle className="h-4 w-4" />
@@ -124,16 +146,53 @@ export default function Create({ auth, platforms }: Props) {
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="image_url">Image URL (optional)</Label>
-                                        <Input
-                                            id="image_url"
-                                            type="text"
-                                            name="image_url"
-                                            value={data.image_url}
-                                            className="mt-1 block w-full"
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('image_url', e.target.value)}
-                                        />
-                                        <InputError message={errors.image_url} className="mt-2" />
+                                        <Label htmlFor="image">Image</Label>
+                                        <div className="mt-1 flex items-center gap-4">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="w-32 h-32 flex flex-col items-center justify-center gap-2 relative"
+                                                onClick={() => document.getElementById('image')?.click()}
+                                            >
+                                                {previewUrl ? (
+                                                    <>
+                                                        <img
+                                                            src={previewUrl}
+                                                            alt="Preview"
+                                                            className="w-full h-full object-cover absolute inset-0 rounded-md"
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="absolute -top-2 -right-2 h-6 w-6"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeImage();
+                                                            }}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ImageIcon className="h-8 w-8 text-gray-400" />
+                                                        <span className="text-xs text-gray-500">Upload Image</span>
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <input
+                                                id="image"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="hidden"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            Supported formats: JPEG, PNG, GIF (max 5MB)
+                                        </p>
+                                        <InputError message={errors.image} className="mt-2" />
                                     </div>
 
                                     <div>

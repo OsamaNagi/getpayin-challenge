@@ -6,6 +6,7 @@ use App\Models\Platform;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -58,17 +59,23 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image_url' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'scheduled_time' => 'required|date|after:now',
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'exists:platforms,id',
         ]);
 
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('post-images', 'public');
+        }
+
         // Create the post
         $post = Post::create([
             'title' => $validated['title'],
             'content' => $validated['content'],
-            'image_url' => $validated['image_url'],
+            'image_url' => $imagePath ? Storage::url($imagePath) : null,
             'scheduled_time' => $validated['scheduled_time'],
             'status' => 'scheduled',
             'user_id' => auth()->id(),
@@ -118,7 +125,7 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image_url' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'scheduled_time' => 'required|date',
             'platforms' => 'required|array|min:1',
             'platforms.*' => 'exists:platforms,id',
@@ -129,11 +136,22 @@ class PostController extends Controller
             return back()->with('error', 'Cannot edit a published post.');
         }
 
+        // Handle image upload
+        $imagePath = $post->image_url;
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($post->image_url) {
+                $oldPath = str_replace('/storage/', '', $post->image_url);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $imagePath = Storage::url($request->file('image')->store('post-images', 'public'));
+        }
+
         // Update the post
         $post->update([
             'title' => $validated['title'],
             'content' => $validated['content'],
-            'image_url' => $validated['image_url'],
+            'image_url' => $imagePath,
             'scheduled_time' => $validated['scheduled_time'],
         ]);
 
@@ -156,6 +174,12 @@ class PostController extends Controller
         // Ensure the post belongs to the authenticated user
         if ($post->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        // Delete the image if it exists
+        if ($post->image_url) {
+            $imagePath = str_replace('/storage/', '', $post->image_url);
+            Storage::disk('public')->delete($imagePath);
         }
 
         $post->delete();
