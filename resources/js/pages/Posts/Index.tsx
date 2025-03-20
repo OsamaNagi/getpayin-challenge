@@ -160,6 +160,15 @@ export default function Index({ auth, posts }: Props) {
                                                     </TableCell>
                                                     <TableCell className="whitespace-nowrap">
                                                         <div className="flex flex-col sm:flex-row gap-2">
+                                                            <Button 
+                                                                variant="secondary" 
+                                                                size="sm" 
+                                                                asChild
+                                                            >
+                                                                <Link href={route('posts.show', post.id)}>
+                                                                    View
+                                                                </Link>
+                                                            </Button>
                                                             {post.status !== 'published' && (
                                                                 <>
                                                                     <Button 

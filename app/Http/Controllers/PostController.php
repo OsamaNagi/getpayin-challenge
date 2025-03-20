@@ -163,4 +163,17 @@ class PostController extends Controller
         return redirect()->route('posts.index')
             ->with('success', 'Post deleted successfully.');
     }
+
+    public function show(Post $post)
+    {
+        if ($post->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $post->load('platforms');
+        
+        return Inertia::render('Posts/Show', [
+            'post' => $post
+        ]);
+    }
 }
