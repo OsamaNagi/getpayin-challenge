@@ -94,6 +94,9 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
                             slotMaxTime="24:00:00"
                             dayMaxEvents={3}
                             moreLinkClick="popover"
+                            listDayFormat={{ weekday: 'long' }}
+                            listDaySideFormat={{ month: 'long', day: 'numeric', year: 'numeric' }}
+                            viewClassNames="rounded-lg overflow-hidden"
                         />
                     </div>
                 </div>
