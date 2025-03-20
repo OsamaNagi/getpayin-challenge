@@ -66,13 +66,13 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
     };
 
     return (
-        <Card>
+        <Card className="overflow-hidden">
             <CardHeader>
                 <CardTitle>Scheduled Posts Calendar</CardTitle>
             </CardHeader>
-            <CardContent>
-                <div>
-                    <div className="min-h-[600px]">
+            <CardContent className="p-4 lg:p-8">
+                <div className="overflow-x-auto">
+                    <div className="min-h-[700px] w-full">
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
                             initialView="dayGridMonth"
@@ -92,6 +92,8 @@ const Calendar: React.FC<CalendarProps> = ({ posts }) => {
                             }}
                             slotMinTime="00:00:00"
                             slotMaxTime="24:00:00"
+                            dayMaxEvents={3}
+                            moreLinkClick="popover"
                         />
                     </div>
                 </div>

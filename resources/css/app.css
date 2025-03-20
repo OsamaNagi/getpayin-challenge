@@ -182,6 +182,10 @@
     color: rgb(209 213 219);
 }
 
+.fc .fc-view-harness {
+    min-width: 768px;
+}
+
 /* @media (max-width: 640px) {
     .fc .fc-daygrid-event {
         margin-left: 0 !important;
