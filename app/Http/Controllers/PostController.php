@@ -2,7 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Platform;
+use App\Actions\Post\CreatePostAction;
+use App\Actions\Post\DeletePostAction;
+use App\Actions\Post\ListPostsAction;
+use App\Actions\Post\ShowPostAction;
+use App\Actions\Post\UpdatePostAction;
+use App\Http\Requests\Post\CreatePostRequest;
+use App\Http\Requests\Post\DeletePostRequest;
+use App\Http\Requests\Post\ListPostsRequest;
+use App\Http\Requests\Post\ShowPostRequest;
+use App\Http\Requests\Post\UpdatePostRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,24 +22,16 @@ class PostController extends Controller
     /**
      * Display a listing of the posts.
      */
-    public function index(Request $request)
+    public function index(ListPostsRequest $request, ListPostsAction $action)
     {
-        $status = $request->input('status');
-        $date = $request->input('date');
+        /** @var \App\Models\User $user */
+        $user = $request->user();
 
-        $query = Post::with('platforms')
-            ->where('user_id', auth()->id())
-            ->latest();
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        if ($date) {
-            $query->whereDate('scheduled_time', $date);
-        }
-
-        $posts = $query->paginate(10);
+        $posts = $action->handle(
+            $user,
+            $request->input('status'),
+            $request->input('date')
+        );
 
         return Inertia::render('Posts/Index', [
             'posts' => $posts,
@@ -53,40 +54,16 @@ class PostController extends Controller
     /**
      * Store a newly created post in storage.
      */
-    public function store(Request $request)
+    public function store(CreatePostRequest $request, CreatePostAction $action)
     {
-        // Validate the post data
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
-            'scheduled_time' => 'required|date|after:now',
-            'platforms' => 'required|array|min:1',
-            'platforms.*' => 'exists:platforms,id',
-        ]);
+        /** @var \App\Models\User $user */
+        $user = $request->user();
 
-        // Handle image upload
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('post-images', 'public');
-        }
-
-        // Create the post
-        $post = Post::create([
-            'title' => $validated['title'],
-            'content' => $validated['content'],
-            'image_url' => $imagePath ? Storage::url($imagePath) : null,
-            'scheduled_time' => $validated['scheduled_time'],
-            'status' => 'scheduled',
-            'user_id' => auth()->id(),
-        ]);
-
-        // Attach selected platforms
-        foreach ($validated['platforms'] as $platformId) {
-            $post->platforms()->attach($platformId, [
-                'platform_status' => 'pending',
-            ]);
-        }
+        $action->handle(
+            $user,
+            $request->validated(),
+            $request->file('image')
+        );
 
         return redirect()->route('posts.index')
             ->with('success', 'Post scheduled successfully.');
@@ -114,62 +91,24 @@ class PostController extends Controller
     /**
      * Update the specified post in storage.
      */
-    public function update(Request $request, Post $post)
+    public function update(UpdatePostRequest $request, Post $post, UpdatePostAction $action)
     {
         // Ensure the post belongs to the authenticated user
         if ($post->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // Validate the post data
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
-            'remove_image' => 'boolean',
-            'scheduled_time' => 'required|date',
-            'platforms' => 'required|array|min:1',
-            'platforms.*' => 'exists:platforms,id',
-        ]);
-
         // Only allow editing if post is in draft or scheduled state
         if (!in_array($post->status, ['draft', 'scheduled'])) {
             return back()->with('error', 'Cannot edit a published post.');
         }
 
-        // Handle image upload or removal
-        $imagePath = $post->image_url;
-        
-        if ($request->boolean('remove_image')) {
-            // Delete the existing image if it exists
-            if ($post->image_url) {
-                $oldPath = str_replace('/storage/', '', $post->image_url);
-                Storage::disk('public')->delete($oldPath);
-            }
-            $imagePath = null;
-        } elseif ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($post->image_url) {
-                $oldPath = str_replace('/storage/', '', $post->image_url);
-                Storage::disk('public')->delete($oldPath);
-            }
-            $imagePath = Storage::url($request->file('image')->store('post-images', 'public'));
-        }
-
-        // Update the post
-        $post->update([
-            'title' => $validated['title'],
-            'content' => $validated['content'],
-            'image_url' => $imagePath,
-            'scheduled_time' => $validated['scheduled_time'],
-        ]);
-
-        // Sync platforms
-        $platformData = array_fill_keys($validated['platforms'], [
-            'platform_status' => 'pending',
-        ]);
-
-        $post->platforms()->sync($platformData);
+        $action->handle(
+            $post,
+            $request->validated(),
+            $request->file('image'),
+            $request->boolean('remove_image')
+        );
 
         return redirect()->route('posts.index')
             ->with('success', 'Post updated successfully.');
@@ -178,32 +117,20 @@ class PostController extends Controller
     /**
      * Remove the specified post from storage.
      */
-    public function destroy(Post $post)
+    public function destroy(DeletePostRequest $request, Post $post, DeletePostAction $action)
     {
-        // Ensure the post belongs to the authenticated user
-        if ($post->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        // Delete the image if it exists
-        if ($post->image_url) {
-            $imagePath = str_replace('/storage/', '', $post->image_url);
-            Storage::disk('public')->delete($imagePath);
-        }
-
-        $post->delete();
+        $action->handle($post);
 
         return redirect()->route('posts.index')
             ->with('success', 'Post deleted successfully.');
     }
 
-    public function show(Post $post)
+    /**
+     * Display the specified post.
+     */
+    public function show(ShowPostRequest $request, Post $post, ShowPostAction $action)
     {
-        if ($post->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        $post->load('platforms');
+        $post = $action->handle($post);
         
         return Inertia::render('Posts/Show', [
             'post' => $post
