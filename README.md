@@ -209,6 +209,14 @@ Start the queue worker for background job processing:
 php artisan queue:work --queue=posts
 ```
 
+### Run The Command Job
+
+Start Process all posts that are due to be published:
+
+```bash
+php artisan posts:process-due
+```
+
 ### Development Environment
 
 1. Start Vite development server:
