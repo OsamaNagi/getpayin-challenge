@@ -194,15 +194,6 @@ php artisan db:seed
     APP_TIMEZONE=Africa/Cairo
     ```
 
-4. Set up social media API credentials:
-    ```env
-    FACEBOOK_CLIENT_ID=your_client_id
-    FACEBOOK_CLIENT_SECRET=your_client_secret
-    TWITTER_API_KEY=your_api_key
-    TWITTER_API_SECRET=your_api_secret
-    # ... other platform credentials
-    ```
-
 ### Running Jobs and Scheduled Tasks
 
 1. Process posts that are due to be published:
@@ -221,28 +212,12 @@ php artisan db:seed
     php artisan queue:work --queue=posts
     ```
 
-3. Set up automatic scheduled tasks:
-    ```bash
-    # Add to server crontab
-    * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
-    ```
-
 ### Development Environment
 
 1. Start Vite development server:
 
     ```bash
     npm run dev
-    ```
-
-2. Watch for file changes:
-    ```bash
-    npm run watch
-    ```
-
-3. Build for production:
-    ```bash
-    npm run build
     ```
 
 ## Architecture and Design Decisions
@@ -295,33 +270,3 @@ php artisan db:seed
     - Comprehensive error states for each platform
     - Detailed error logging for troubleshooting
     - User-friendly error messages
-
-## Production Deployment
-
-For production environments, ensure you:
-
-1. Set up a proper queue worker using Supervisor:
-    ```
-    [program:laravel-worker]
-    process_name=%(program_name)s_%(process_num)02d
-    command=php /path/to/your/project/artisan queue:work --queue=default,posts --tries=3
-    autostart=true
-    autorestart=true
-    user=www-data
-    numprocs=8
-    redirect_stderr=true
-    stdout_logfile=/path/to/your/project/storage/logs/worker.log
-    ```
-
-2. Configure the scheduler to run every minute:
-    ```
-    * * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
-    ```
-
-3. Optimize the application:
-    ```bash
-    php artisan optimize
-    php artisan route:cache
-    php artisan config:cache
-    php artisan view:cache
-    ```
