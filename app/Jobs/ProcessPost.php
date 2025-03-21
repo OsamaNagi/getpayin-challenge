@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Enums\PlatformStatus;
-use App\Enums\PlatformType;
 use App\Enums\PostStatus;
 use App\Models\Post;
 use App\Services\MockSocialMediaService;
@@ -15,7 +14,6 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +23,7 @@ class ProcessPost implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private const MAX_RETRIES = 3;
+
     private const RATE_LIMIT_DELAY = 60; // seconds
 
     public function __construct(
@@ -40,35 +39,43 @@ class ProcessPost implements ShouldQueue
                 $this->processPlatform($platform, $socialMediaService);
             } catch (ValidationException $e) {
                 $this->markPlatformAsFailed($platform, $e->errors());
+
                 return;
             } catch (RequestException $e) {
                 if ($e->response->status() === 429) { // Rate limit
-                    if ($this->shouldRetry()) {
-                        $this->retryLater();
+                    if ($this->attempts() < self::MAX_RETRIES) {
+                        $this->release(self::RATE_LIMIT_DELAY);
+
                         return;
                     }
                     $this->markPlatformAsFailed($platform, 'Rate limit exceeded after maximum retries');
+
                     return;
                 }
 
                 if ($e->response->status() === 422) { // Validation
                     $this->markPlatformAsFailed($platform, $e->response->json('errors'));
+
                     return;
                 }
 
-                if ($this->shouldRetry()) {
-                    $this->retryLater();
+                if ($this->attempts() < self::MAX_RETRIES) {
+                    $this->release(self::RATE_LIMIT_DELAY);
+
                     return;
                 }
 
-                $this->markPlatformAsFailed($platform, $e->response->body() ?: 'Server error');
+                $this->markPlatformAsFailed($platform, $e->response->json('message') ?: 'Server error');
+
                 return;
             } catch (Exception $e) {
-                if ($this->shouldRetry()) {
-                    $this->retryLater();
+                if ($this->attempts() < self::MAX_RETRIES) {
+                    $this->release(self::RATE_LIMIT_DELAY);
+
                     return;
                 }
                 $this->markPlatformAsFailed($platform, $e->getMessage());
+
                 return;
             }
         }
@@ -113,14 +120,4 @@ class ProcessPost implements ShouldQueue
             'error' => is_array($error) ? json_encode($error) : $error,
         ]);
     }
-
-    private function shouldRetry(): bool
-    {
-        return $this->attempts() < self::MAX_RETRIES;
-    }
-
-    private function retryLater(): void
-    {
-        $this->release(self::RATE_LIMIT_DELAY);
-    }
-} 
+}
