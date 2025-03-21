@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\PlatformType;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,8 +22,9 @@ class PlatformFactory extends Factory
         return [
             'name' => $type->label(),
             'type' => $type->value,
-            'credentials' => json_encode(['token' => fake()->uuid()]),
-            'user_id' => User::factory(),
+            'credentials' => [
+                'token' => fake()->uuid(),
+            ],
             'is_active' => true,
         ];
     }

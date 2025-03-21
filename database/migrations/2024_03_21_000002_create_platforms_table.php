@@ -24,6 +24,9 @@ return new class extends Migration
             $table->foreignId('platform_id')->constrained()->cascadeOnDelete();
             $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->string('platform_status')->default('pending');
+            $table->string('platform_post_id')->nullable();
+            $table->timestamp('published_at')->nullable();
+            $table->text('error')->nullable();
             $table->timestamps();
 
             $table->primary(['platform_id', 'post_id']);
