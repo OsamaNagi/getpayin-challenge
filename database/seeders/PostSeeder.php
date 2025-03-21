@@ -8,6 +8,7 @@ use App\Models\Platform;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Jobs\ProcessPost;
 
 class PostSeeder extends Seeder
 {
@@ -126,5 +127,10 @@ class PostSeeder extends Seeder
                     );
                 });
         }
+
+        // Dispatch jobs for all posts
+        Post::all()->each(function (Post $post) {
+            dispatch(new ProcessPost($post));
+        });
     }
 } 
