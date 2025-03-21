@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\PlatformType;
 use App\Enums\PostStatus;
 use App\Jobs\ProcessDuePosts;
 use App\Jobs\ProcessPost;
@@ -23,7 +22,7 @@ test('process due posts dispatches individual post jobs', function () {
         ->for($user)
         ->create([
             'status' => PostStatus::SCHEDULED,
-            'scheduled_for' => now()->subHour(),
+            'scheduled_time' => now()->subHour(),
         ]);
 
     // Attach platforms to posts
@@ -32,11 +31,11 @@ test('process due posts dispatches individual post jobs', function () {
     }
 
     // Run the job
-    (new ProcessDuePosts())->handle();
+    (new ProcessDuePosts)->handle();
 
     // Assert that individual post jobs were dispatched
     Queue::assertPushed(ProcessPost::class, 5);
-    
+
     // Assert each post was queued with correct data
     foreach ($posts as $post) {
         Queue::assertPushed(function (ProcessPost $job) use ($post) {
@@ -46,4 +45,4 @@ test('process due posts dispatches individual post jobs', function () {
 
     // Assert jobs were pushed to the correct queue
     Queue::assertPushedOn('posts', ProcessPost::class);
-}); 
+});

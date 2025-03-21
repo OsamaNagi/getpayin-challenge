@@ -23,7 +23,7 @@ class ProcessDuePosts implements ShouldQueue
 
         Post::query()
             ->where('status', PostStatus::SCHEDULED->value)
-            ->where('scheduled_for', '<=', now())
+            ->where('scheduled_time', '<=', now())
             ->with(['user', 'platforms'])
             ->chunk(self::CHUNK_SIZE, function ($posts) {
                 foreach ($posts as $post) {
@@ -33,4 +33,4 @@ class ProcessDuePosts implements ShouldQueue
 
         Log::info('Finished dispatching post processing jobs');
     }
-} 
+}

@@ -2,12 +2,13 @@
 
 use App\Enums\PlatformType;
 use App\Services\MockSocialMediaService;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Sleep;
 
 test('mock social media service simulates network latency', function () {
     Sleep::fake();
 
-    $service = new MockSocialMediaService();
+    $service = new MockSocialMediaService;
     $service->publish(PlatformType::INSTAGRAM, [
         'content' => 'Test content',
         'image_url' => 'https://example.com/image.jpg',
@@ -15,15 +16,15 @@ test('mock social media service simulates network latency', function () {
 
     // Assert that Sleep was called with milliseconds between 100 and 500
     Sleep::assertSleptTimes(1);
-    Sleep::assertSequence([
-        fn ($duration) => $duration->milliseconds >= 100 && $duration->milliseconds <= 500,
-    ]);
+    Sleep::assertSlept(function ($duration) {
+        return $duration->milliseconds >= 100 && $duration->milliseconds <= 500;
+    });
 });
 
 test('mock social media service returns successful response', function () {
     Sleep::fake();
 
-    $service = new MockSocialMediaService();
+    $service = new MockSocialMediaService;
     $response = $service->publish(PlatformType::INSTAGRAM, [
         'content' => 'Test content',
         'image_url' => 'https://example.com/image.jpg',
@@ -37,59 +38,92 @@ test('mock social media service returns successful response', function () {
 
 test('mock social media service can simulate rate limit', function () {
     Sleep::fake();
-    
-    // Mock rand to always return rate limit
+
+    // Mock the service to simulate rate limit
     $mock = mock(MockSocialMediaService::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
-        ->expect(shouldSimulateRateLimit: fn () => true);
+        ->shouldReceive('shouldSimulateRateLimit')
+        ->once()
+        ->andReturn(true)
+        ->getMock();
 
-    $response = $mock->publish(PlatformType::INSTAGRAM, [
-        'content' => 'Test content',
-        'image_url' => 'https://example.com/image.jpg',
-    ]);
+    try {
+        $mock->publish(PlatformType::INSTAGRAM, [
+            'content' => 'Test content',
+            'image_url' => 'https://example.com/image.jpg',
+        ]);
 
-    expect($response)
-        ->toHaveKey('success', false)
-        ->toHaveKey('error', 'rate_limit')
-        ->toHaveKey('retry_after');
+        $this->fail('Expected RequestException was not thrown');
+    } catch (RequestException $e) {
+        $response = $e->response->json();
+        test()->assertArrayHasKey('success', $response);
+        test()->assertArrayHasKey('error', $response);
+        test()->assertArrayHasKey('retry_after', $response);
+        test()->assertEquals(false, $response['success']);
+        test()->assertEquals('rate_limit', $response['error']);
+        test()->assertEquals(60, $response['retry_after']);
+    }
 });
 
 test('mock social media service can simulate validation error', function () {
     Sleep::fake();
-    
-    // Mock rand to always return validation error
+
+    // Mock the service to simulate validation error
     $mock = mock(MockSocialMediaService::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
-        ->expect(shouldSimulateValidationError: fn () => true);
+        ->shouldReceive('shouldSimulateValidationError')
+        ->once()
+        ->andReturn(true)
+        ->getMock();
 
-    $response = $mock->publish(PlatformType::INSTAGRAM, [
-        'content' => 'Test content',
-        'image_url' => 'https://example.com/image.jpg',
-    ]);
+    try {
+        $mock->publish(PlatformType::INSTAGRAM, [
+            'content' => 'Test content',
+            'image_url' => 'https://example.com/image.jpg',
+        ]);
 
-    expect($response)
-        ->toHaveKey('success', false)
-        ->toHaveKey('error', 'validation')
-        ->toHaveKey('errors.content');
+        $this->fail('Expected RequestException was not thrown');
+    } catch (RequestException $e) {
+        $response = $e->response->json();
+        test()->assertArrayHasKey('success', $response);
+        test()->assertArrayHasKey('error', $response);
+        test()->assertArrayHasKey('errors', $response);
+        test()->assertEquals(false, $response['success']);
+        test()->assertEquals('validation_error', $response['error']);
+        test()->assertArrayHasKey('content', $response['errors']);
+        test()->assertEquals(['Content is too long for this platform'], $response['errors']['content']);
+    }
 });
 
 test('mock social media service can simulate server error', function () {
     Sleep::fake();
-    
-    // Mock rand to always return server error
+
+    // Mock the service to simulate server error
     $mock = mock(MockSocialMediaService::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
-        ->expect(shouldSimulateServerError: fn () => true);
+        ->shouldReceive('shouldSimulateServerError')
+        ->once()
+        ->andReturn(true)
+        ->getMock();
 
-    $response = $mock->publish(PlatformType::INSTAGRAM, [
-        'content' => 'Test content',
-        'image_url' => 'https://example.com/image.jpg',
-    ]);
+    try {
+        $mock->publish(PlatformType::INSTAGRAM, [
+            'content' => 'Test content',
+            'image_url' => 'https://example.com/image.jpg',
+        ]);
 
-    expect($response)
-        ->toHaveKey('success', false)
-        ->toHaveKey('error', 'server');
-}); 
+        $this->fail('Expected RequestException was not thrown');
+    } catch (RequestException $e) {
+        $response = $e->response->json();
+        test()->assertArrayHasKey('success', $response);
+        test()->assertArrayHasKey('error', $response);
+        test()->assertArrayHasKey('message', $response);
+        test()->assertEquals(false, $response['success']);
+        test()->assertEquals('server_error', $response['error']);
+        test()->assertEquals('Internal server error', $response['message']);
+        test()->assertEquals(500, $e->response->status());
+    }
+});
