@@ -20,7 +20,20 @@ interface DateTimePickerProps {
 export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
   const minuteOptions = Array.from({ length: 60 }, (_, i) => i)
   const hourOptions = Array.from({ length: 24 }, (_, i) => i)
-
+  
+  // Create a display date that's 2 hours behind the actual date
+  const displayDate = date ? new Date(date.getTime()) : new Date();
+  if (date) {
+    displayDate.setHours(date.getHours() - 2);
+  }
+  
+  // When setting a date, add 2 hours to compensate
+  const handleSetDate = (newDate: Date) => {
+    const adjustedDate = new Date(newDate.getTime());
+    adjustedDate.setHours(newDate.getHours() + 2);
+    setDate(adjustedDate);
+  }
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -32,24 +45,24 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP p") : <span>Pick a date</span>}
+          {date ? format(displayDate, "PPP p") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date}
-          onSelect={(newDate) => newDate && setDate(newDate)}
+          selected={displayDate}
+          onSelect={(newDate) => newDate && handleSetDate(newDate)}
           initialFocus
         />
         <div className="border-t border-border p-3 space-y-2">
           <div className="flex items-center justify-between space-x-2">
             <Select
-              value={date ? date.getHours().toString() : ""}
+              value={displayDate ? displayDate.getHours().toString() : ""}
               onValueChange={(value) => {
-                const newDate = new Date(date)
-                newDate.setHours(parseInt(value))
-                setDate(newDate)
+                const newDate = new Date(displayDate);
+                newDate.setHours(parseInt(value));
+                handleSetDate(newDate);
               }}
             >
               <SelectTrigger>
@@ -65,11 +78,11 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
             </Select>
             <span>:</span>
             <Select
-              value={date ? date.getMinutes().toString() : ""}
+              value={displayDate ? displayDate.getMinutes().toString() : ""}
               onValueChange={(value) => {
-                const newDate = new Date(date)
-                newDate.setMinutes(parseInt(value))
-                setDate(newDate)
+                const newDate = new Date(displayDate);
+                newDate.setMinutes(parseInt(value));
+                handleSetDate(newDate);
               }}
             >
               <SelectTrigger>
