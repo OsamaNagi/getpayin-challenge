@@ -5,12 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-
-interface Platform {
-    id: number;
-    name: string;
-    active: boolean;
-}
+import { Platform } from '@/types/platform';
+import { Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
 
 interface Props {
     auth: {
@@ -25,6 +21,21 @@ interface Props {
         message?: string;
     };
 }
+
+const PlatformIcon = ({ type }: { type: Platform['type'] }) => {
+    switch (type) {
+        case 'instagram':
+            return <Instagram className="h-5 w-5" />;
+        case 'facebook':
+            return <Facebook className="h-5 w-5" />;
+        case 'twitter':
+            return <Twitter className="h-5 w-5" />;
+        case 'linkedin':
+            return <Linkedin className="h-5 w-5" />;
+        default:
+            return null;
+    }
+};
 
 export default function Index({ auth, platforms: initialPlatforms, errors }: Props) {
     // Use local state for platforms to ensure UI updates instantly
@@ -95,7 +106,6 @@ export default function Index({ auth, platforms: initialPlatforms, errors }: Pro
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Platform</TableHead>
-                                        {/* <TableHead>Type</TableHead> */}
                                         <TableHead>Status</TableHead>
                                         <TableHead>Action</TableHead>
                                     </TableRow>
@@ -103,8 +113,12 @@ export default function Index({ auth, platforms: initialPlatforms, errors }: Pro
                                 <TableBody>
                                     {platforms.map((platform, index) => (
                                         <TableRow key={platform.id}>
-                                            <TableCell className="font-medium">{platform.name}</TableCell>
-                                            {/* <TableCell>{platform.type}</TableCell> */}
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <PlatformIcon type={platform.type} />
+                                                    {platform.name}
+                                                </div>
+                                            </TableCell>
                                             <TableCell>
                                                 <span 
                                                     className={`text-sm px-2 py-1 rounded ${

@@ -22,7 +22,12 @@ class PlatformController extends Controller
         });
 
         return Inertia::render('Platforms/Index', [
-            'platforms' => $platforms,
+            'platforms' => $platforms->map(fn ($platform) => [
+                'id' => $platform->id,
+                'name' => $platform->name,
+                'type' => $platform->type,
+                'active' => $platform->active,
+            ]),
         ]);
     }
 
@@ -34,7 +39,11 @@ class PlatformController extends Controller
         $platforms = Platform::all();
         
         return response()->json([
-            'platforms' => $platforms,
+            'platforms' => $platforms->map(fn ($platform) => [
+                'id' => $platform->id,
+                'name' => $platform->name,
+                'type' => $platform->type,
+            ]),
         ]);
     }
 

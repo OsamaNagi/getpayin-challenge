@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('title');
             $table->text('content');
             $table->string('image_url')->nullable();
-            $table->dateTime('scheduled_time');
-            $table->enum('status', ['draft', 'scheduled', 'published'])->default('draft');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('scheduled_time')->nullable();
+            $table->string('status')->default('draft');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -30,4 +30,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('posts');
     }
-};
+}; 

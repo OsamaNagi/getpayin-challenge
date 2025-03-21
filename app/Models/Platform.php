@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PlatformType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,20 @@ class Platform extends Model
     protected $fillable = [
         'name',
         'type',
+        'credentials',
+        'user_id',
+        'is_active',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'type' => PlatformType::class,
+        'credentials' => 'json',
+        'is_active' => 'boolean',
     ];
 
     /**
