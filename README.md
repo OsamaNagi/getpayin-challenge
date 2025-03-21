@@ -15,6 +15,8 @@ A robust social media post scheduling and management system built with Laravel, 
     - Real-time status updates for post publishing
     - Automatic retry mechanism for failed posts
 - **Calendar View**: Visual calendar interface for post scheduling
+- **Automated Publishing**: Scheduled posts are automatically published when due
+- **Timezone Support**: Proper handling of timezones between frontend and backend
 - **Error Handling**: Robust error handling for various scenarios:
     - Rate limiting
     - Validation errors
@@ -35,6 +37,7 @@ A robust social media post scheduling and management system built with Laravel, 
     - Tailwind CSS
     - Inertia.js
     - Full Calendar for calendar view
+    - date-fns for date manipulation
 
 ## Project Structure
 
@@ -143,13 +146,7 @@ The following seeders are available:
     php artisan db:seed --class=PlatformSeeder
     ```
 
-2. `UserSeeder`: Creates test users with different roles
-
-    ```bash
-    php artisan db:seed --class=UserSeeder
-    ```
-
-3. `PostSeeder`: Creates sample posts with various statuses
+2. `PostSeeder`: Creates sample posts with various statuses
     ```bash
     php artisan db:seed --class=PostSeeder
     ```
@@ -192,7 +189,12 @@ php artisan db:seed
     REDIS_PORT=6379
     ```
 
-3. Set up social media API credentials:
+3. Set up timezone (required for proper scheduling):
+    ```env
+    APP_TIMEZONE=Africa/Cairo
+    ```
+
+4. Set up social media API credentials:
     ```env
     FACEBOOK_CLIENT_ID=your_client_id
     FACEBOOK_CLIENT_SECRET=your_client_secret
@@ -201,21 +203,29 @@ php artisan db:seed
     # ... other platform credentials
     ```
 
-### Queue Worker
+### Running Jobs and Scheduled Tasks
 
-Start the queue worker for background job processing:
+1. Process posts that are due to be published:
 
-```bash
-php artisan queue:work --queue=posts
-```
+    ```bash
+    php artisan posts:process-due
+    ```
 
-### Run The Command Job
+2. Run the queue worker to process pending jobs:
 
-Start Process all posts that are due to be published:
+    ```bash
+    # Process all queues
+    php artisan queue:work
+    
+    # Process specific queues
+    php artisan queue:work --queue=posts
+    ```
 
-```bash
-php artisan posts:process-due
-```
+3. Set up automatic scheduled tasks:
+    ```bash
+    # Add to server crontab
+    * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+    ```
 
 ### Development Environment
 
@@ -228,6 +238,11 @@ php artisan posts:process-due
 2. Watch for file changes:
     ```bash
     npm run watch
+    ```
+
+3. Build for production:
+    ```bash
+    npm run build
     ```
 
 ## Architecture and Design Decisions
@@ -245,11 +260,27 @@ php artisan posts:process-due
     - Asynchronous processing for social media posts
     - Automatic retry mechanism for failed attempts
     - Rate limiting handling
+    - Separate queues for different job types (default and posts)
 
 3. **Platform Integration**
     - Mock service for development and testing
     - Adapter pattern for different social media platforms
     - Easy to add new platforms
+
+### UI/UX Considerations
+
+1. **Responsive Design**
+    - Mobile-friendly layout
+    - Proper text truncation for long titles and content
+    - Hover tooltips for viewing full text
+
+2. **Timezone Handling**
+    - Proper conversion between frontend and backend timezones
+    - Consistent date/time display across the application
+
+3. **Status Indicators**
+    - Color-coded badges for post and platform statuses
+    - Clear visual feedback for users
 
 ### Trade-offs and Considerations
 
@@ -262,36 +293,35 @@ php artisan posts:process-due
 2. **Error Handling**
 
     - Comprehensive error states for each platform
-    - Automatic retries with exponential backoff
-    - Trade-off: Increased complexity for better reliability
+    - Detailed error logging for troubleshooting
+    - User-friendly error messages
 
-3. **UI/UX Decisions**
+## Production Deployment
 
-    - Single-page application using Inertia.js
-    - Real-time updates for post status
-    - Trade-off: More complex frontend but better user experience
+For production environments, ensure you:
 
-4. **Testing Strategy**
-    - Feature tests for critical paths
-    - Unit tests for business logic
-    - Mock external services
-    - Trade-off: Test coverage vs. development speed
+1. Set up a proper queue worker using Supervisor:
+    ```
+    [program:laravel-worker]
+    process_name=%(program_name)s_%(process_num)02d
+    command=php /path/to/your/project/artisan queue:work --queue=default,posts --tries=3
+    autostart=true
+    autorestart=true
+    user=www-data
+    numprocs=8
+    redirect_stderr=true
+    stdout_logfile=/path/to/your/project/storage/logs/worker.log
+    ```
 
-### Future Improvements
+2. Configure the scheduler to run every minute:
+    ```
+    * * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
+    ```
 
-1. **Scalability**
-
-    - Implement caching for frequently accessed data
-    - Add queue prioritization
-    - Horizontal scaling for job workers
-
-2. **Features**
-
-    - Analytics dashboard
-    - Content approval workflow
-    - AI-powered content suggestions
-
-3. **Monitoring**
-    - Add detailed logging
-    - Implement error tracking
-    - Performance monitoring
+3. Optimize the application:
+    ```bash
+    php artisan optimize
+    php artisan route:cache
+    php artisan config:cache
+    php artisan view:cache
+    ```

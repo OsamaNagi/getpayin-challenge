@@ -118,11 +118,15 @@ export default function Index({ auth, posts }: Props) {
                                             <TableBody>
                                                 {posts.data.map((post) => (
                                                     <TableRow key={post.id}>
-                                                        <TableCell className="font-medium min-w-[120px]">{post.title}</TableCell>
-                                                        <TableCell className="min-w-[200px] max-w-md">
-                                                            <p className="truncate" title={post.content}>
-                                                                {post.content}
-                                                            </p>
+                                                        <TableCell className="font-medium min-w-[120px] max-w-[200px]">
+                                                            <div className="truncate" title={post.title}>
+                                                                {post.title}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="min-w-[200px] max-w-[300px]">
+                                                            <div className="truncate" title={post.content}>
+                                                                {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="whitespace-nowrap">
                                                             <Badge className={getStatusBadgeColor(post.status)}>
