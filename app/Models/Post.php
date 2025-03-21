@@ -32,8 +32,8 @@ class Post extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'scheduled_time' => 'datetime',
         'status' => PostStatus::class,
+        'scheduled_time' => 'datetime',
     ];
 
     /**
@@ -49,8 +49,8 @@ class Post extends Model
      */
     public function platforms(): BelongsToMany
     {
-        return $this->belongsToMany(Platform::class, 'post_platform')
-            ->withPivot('platform_status')
+        return $this->belongsToMany(Platform::class)
+            ->withPivot(['platform_status', 'platform_post_id', 'published_at', 'error'])
             ->withTimestamps();
     }
 }

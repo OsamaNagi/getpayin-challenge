@@ -7,6 +7,7 @@ enum PostStatus: string
     case DRAFT = 'draft';
     case SCHEDULED = 'scheduled';
     case PUBLISHED = 'published';
+    case FAILED = 'failed';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum PostStatus: string
             self::DRAFT => 'Draft',
             self::SCHEDULED => 'Scheduled',
             self::PUBLISHED => 'Published',
+            self::FAILED => 'Failed',
         };
     }
 
@@ -23,6 +25,7 @@ enum PostStatus: string
             self::DRAFT => 'gray',
             self::SCHEDULED => 'blue',
             self::PUBLISHED => 'green',
+            self::FAILED => 'red',
         };
     }
 } 
